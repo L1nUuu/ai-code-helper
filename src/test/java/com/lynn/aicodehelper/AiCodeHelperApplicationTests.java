@@ -6,6 +6,7 @@ import com.lynn.aicodehelper.ai.AiCodeHelperService;
 import dev.langchain4j.data.message.ImageContent;
 import dev.langchain4j.data.message.TextContent;
 import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.service.Result;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,9 +20,6 @@ class AiCodeHelperApplicationTests {
     @Resource
     private AiCodeHelperService aiCodeHelperService;
 
-    @Test
-    void contextLoads() {
-    }
 
     @Test
     public void chatTest(){
@@ -67,4 +65,27 @@ class AiCodeHelperApplicationTests {
                 .chatForReport("你好，我是程序员LYnn，请给我一份Java的学习报告。");
         System.out.println(report);
     }
+
+    @Test
+    public void chatWithRag(){
+        String result = aiCodeHelperService.chat("怎么去学习Java，有哪些常见的面试题？");
+        System.out.println(result);
+    }
+
+    @Test
+    public void chatWithRagResult(){
+        Result<String> result = aiCodeHelperService.chatWithRag("怎么去学习Java，有哪些常见的面试题？");
+        System.out.println(result.sources());
+        System.out.println(result.content());
+    }
+
+    @Test
+    void chatWithTools() {
+        String result = aiCodeHelperService.chat("有哪些常见的计算机网络面试题？");
+        System.out.println(result);
+    }
+
+
+
+
 }

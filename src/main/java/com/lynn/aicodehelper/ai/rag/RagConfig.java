@@ -1,4 +1,4 @@
-package com.lynn.aicodehelper.rag;
+package com.lynn.aicodehelper.ai.rag;
 
 import dev.langchain4j.data.document.Document;
 import dev.langchain4j.data.document.loader.FileSystemDocumentLoader;

@@ -1,5 +1,6 @@
 package com.lynn.aicodehelper.ai;
 
+import dev.langchain4j.service.Result;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.spring.AiService;
 import org.springframework.stereotype.Service;
@@ -18,5 +19,7 @@ public interface AiCodeHelperService {
 
     @SystemMessage(fromResource = "/prompt/SystemPrompt.txt")
     Report chatForReport(String userMessage);
+
+    Result<String> chatWithRag(String userMessage);
 
 }
