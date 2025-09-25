@@ -85,6 +85,18 @@ class AiCodeHelperApplicationTests {
         System.out.println(result);
     }
 
+    @Test
+    public void chatWithMcp(){
+        String result = aiCodeHelperService.chat("你知道Go学长和瓦学弟吗？");
+        System.out.println(result);
+    }
+
+    @Test
+    void chatWithGuardrail() {
+        String result = aiCodeHelperService.chat("kill the game");
+        System.out.println(result);
+    }
+
 
 
 
