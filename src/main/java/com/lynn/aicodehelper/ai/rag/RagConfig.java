@@ -36,29 +36,32 @@ public class RagConfig {
     }
 
     @Bean
-    public ContentRetriever contentRetriever(EmbeddingModel embeddingModel,
-                                            EmbeddingStore<TextSegment> embeddingStore) {
-        //RAG
-        // 2.文档分割，每个文档按照段落进行分割，最大1000个字符，每次最多重叠200个字符
-        DocumentByCharacterSplitter documentByCharacterSplitter =
-                new DocumentByCharacterSplitter(1000, 200);
-        // 3.自定义文档加载器，把文档转换成向量存储到向量数据库中
-        EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
-                .documentSplitter(documentByCharacterSplitter)
+    public DocumentByCharacterSplitter documentSplitter() {
+        return new DocumentByCharacterSplitter(1000, 200);
+    }
+
+    @Bean
+    public EmbeddingStoreIngestor embeddingStoreIngestor(EmbeddingModel embeddingModel,
+                                                         EmbeddingStore<TextSegment> embeddingStore,
+                                                         DocumentByCharacterSplitter documentSplitter) {
+        return EmbeddingStoreIngestor.builder()
+                .documentSplitter(documentSplitter)
                 .embeddingModel(embeddingModel)
-                //为了提高文档的质量，为每一个切割后的文档碎片 TextSegment 添加文档名称作为元信息
-                .textSegmentTransformer(textSegment -> {
-                    return TextSegment.from(
-                            textSegment.metadata().getString("file_name")
-                                    + "\n" + textSegment.text(), textSegment.metadata());
-                })
+                .textSegmentTransformer(textSegment -> TextSegment.from(
+                        textSegment.metadata().getString("file_name") + "\n" + textSegment.text(),
+                        textSegment.metadata()))
                 .embeddingStore(embeddingStore)
                 .build();
+    }
+
+    @Bean
+    public ContentRetriever contentRetriever(EmbeddingModel embeddingModel,
+                                            EmbeddingStore<TextSegment> embeddingStore,
+                                            EmbeddingStoreIngestor ingestor) {
 
         // 可选：启动时加载内置文档
         if (ingestOnStartup) {
             List<Document> documentList = FileSystemDocumentLoader.loadDocuments("src/main/resources/docs");
-            // 加载文档
             ingestor.ingest(documentList);
         }
         // 4.自定义内容加载器
