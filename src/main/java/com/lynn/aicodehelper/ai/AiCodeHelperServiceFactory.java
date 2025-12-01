@@ -35,8 +35,8 @@ public class AiCodeHelperServiceFactory {
     @Resource
     private QwenStreamingChatModel qwenStreamingChatModel;
 
-    @Bean
-    public AiCodeHelperService createAiCodeHelperService(){
+    @Bean(name = "aiCodeHelperService")
+    public AiCodeHelperService aiCodeHelperService(){
         // 回话记忆
         ChatMemory chatMemory= MessageWindowChatMemory.withMaxMessages(10);
         // 构建 ai service
@@ -54,5 +54,18 @@ public class AiCodeHelperServiceFactory {
         return aiCodeHelperService;
     }
 
-
+    @Bean(name = "aiCodeHelperServicePlain")
+    public AiCodeHelperService aiCodeHelperServicePlain(){
+        ChatMemory chatMemory= MessageWindowChatMemory.withMaxMessages(10);
+        AiCodeHelperService service = AiServices
+                .builder(AiCodeHelperService.class)
+                .chatModel(myQwenChatModel)
+                .chatMemory(chatMemory)
+                .chatMemoryProvider(memoryId -> MessageWindowChatMemory.withMaxMessages(10))
+                .tools(new InterviewQuestionTool())
+                .toolProvider(mcpToolProvider)
+                .streamingChatModel(qwenStreamingChatModel)
+                .build();
+        return service;
+    }
 }

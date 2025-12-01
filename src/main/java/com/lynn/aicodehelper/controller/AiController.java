@@ -12,12 +12,24 @@ import reactor.core.publisher.Flux;
 @RequestMapping("/ai")
 public class AiController {
 
-    @Resource
-    private AiCodeHelperService aiCodeHelperService;
+    @Resource(name = "aiCodeHelperService")
+    private AiCodeHelperService aiCodeHelperServiceRag;
+    @Resource(name = "aiCodeHelperServicePlain")
+    private AiCodeHelperService aiCodeHelperServicePlain;
 
     @GetMapping("/chat")
-    public Flux<ServerSentEvent<String>> chat(int memoryId, String message) {
-        return aiCodeHelperService.chatStream(memoryId, message)
+    public Flux<ServerSentEvent<String>> chat(int memoryId, String message, boolean useRag) {
+        AiCodeHelperService svc = useRag ? aiCodeHelperServiceRag : aiCodeHelperServicePlain;
+        return svc.chatStream(memoryId, message)
+                .map(chunk -> ServerSentEvent.<String>builder()
+                        .data(chunk)
+                        .build());
+    }
+
+    @GetMapping("/chat-alt")
+    public Flux<ServerSentEvent<String>> chatAlt(int memoryId, String message, boolean useRag) {
+        AiCodeHelperService svc = useRag ? aiCodeHelperServiceRag : aiCodeHelperServicePlain;
+        return svc.chatStreamCompare(memoryId, message)
                 .map(chunk -> ServerSentEvent.<String>builder()
                         .data(chunk)
                         .build());

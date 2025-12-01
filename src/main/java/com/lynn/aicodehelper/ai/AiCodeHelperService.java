@@ -33,4 +33,8 @@ public interface AiCodeHelperService {
     @SystemMessage(fromResource = "/prompt/SystemPrompt.txt")
     Flux<String> chatStream(@MemoryId int memoryId, @UserMessage String userMessage);
 
+    // 流式对话（对比页专用提示词）
+    @SystemMessage("你是一个严格基于提供的上下文回答的机器人。不得使用外部知识；若没有上下文则回答‘无相关信息’。回答尽量引用上下文原文并标注来源（如文件名）。")
+    Flux<String> chatStreamCompare(@MemoryId int memoryId, @UserMessage String userMessage);
+
 }

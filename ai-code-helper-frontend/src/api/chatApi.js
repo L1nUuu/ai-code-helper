@@ -12,11 +12,12 @@ const API_BASE_URL = 'http://localhost:8081/api'
  * @param {Function} onClose 连接关闭回调函数
  * @returns {EventSource} 返回 EventSource 对象，用于手动关闭连接
  */
-export function chatWithSSE(memoryId, message, onMessage, onError, onClose) {
+export function chatWithSSE(memoryId, message, useRag, onMessage, onError, onClose) {
     // 构建URL参数
     const params = new URLSearchParams({
         memoryId: memoryId,
-        message: message
+        message: message,
+        useRag: useRag ? 'true' : 'false'
     })
     
     // 创建 EventSource 连接

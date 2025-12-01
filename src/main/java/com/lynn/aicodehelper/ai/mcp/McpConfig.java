@@ -8,6 +8,7 @@ import dev.langchain4j.mcp.client.transport.http.HttpMcpTransport;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 @Configuration
 public class McpConfig {
@@ -16,6 +17,7 @@ public class McpConfig {
     private String apiKey;
 
     @Bean
+    @ConditionalOnProperty(name = "mcp.enabled", havingValue = "true", matchIfMissing = true)
     public McpToolProvider mcpToolProvider() {
         // 和 MCP 服务通讯
         McpTransport transport = new HttpMcpTransport.Builder()

@@ -2,12 +2,26 @@
   <div class="app">
     <!-- 头部标题 -->
     <div class="app-header">
-      <h1 class="app-title">AI 编程小助手</h1>
-      <div class="app-subtitle">帮助您解答编程学习和求职面试相关问题</div>
+      <h1 class="app-title">智能文档问答（RAG 对比演示）</h1>
+      <div class="app-subtitle">仅展示 RAG 对比演示页，已隐藏旧助手页</div>
     </div>
 
-    <!-- 聊天区域 -->
-    <div class="chat-container">
+    <!-- 对比演示页面 -->
+    <RagCompare />
+
+    <!-- 聊天区域（已隐藏） -->
+    <div v-if="false" class="chat-container">
+      <div style="display:flex;gap:12px;align-items:center;padding:10px 20px;border-bottom:1px solid #e1e5e9;background:#fff;">
+        <label style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" v-model="useRag" />
+          <span>开启知识库增强</span>
+        </label>
+        <input type="file" ref="fileInput" accept=".md,.txt" style="display:none" @change="onFileSelected" />
+        <button @click="triggerFileSelect" :disabled="uploading" style="padding:6px 12px;border:none;background:#007bff;color:#fff;border-radius:6px;cursor:pointer;">
+          {{ uploading ? '上传中...' : '上传文档' }}
+        </button>
+        <span v-if="uploadMsg" style="color:#28a745;">{{ uploadMsg }}</span>
+      </div>
       <!-- 消息列表 -->
       <div class="messages-container" ref="messagesContainer">
         <div v-if="messages.length === 0" class="welcome-message">
@@ -72,6 +86,7 @@
 import ChatMessage from './components/ChatMessage.vue'
 import ChatInput from './components/ChatInput.vue'
 import LoadingDots from './components/LoadingDots.vue'
+import RagCompare from './pages/RagCompare.vue'
 import { chatWithSSE } from './api/chatApi.js'
 import { generateMemoryId } from './utils/index.js'
 import { marked } from 'marked'
@@ -79,19 +94,22 @@ import { marked } from 'marked'
 export default {
   name: 'App',
   components: {
-    ChatMessage,
-    ChatInput,
-    LoadingDots
+    RagCompare
   },
   data() {
     return {
+      showCompare: true,
       messages: [],
       memoryId: null,
       isAiTyping: false,
       isStreaming: false,
       currentAiResponse: '',
       currentEventSource: null,
-      connectionError: false
+      connectionError: false,
+      useRag: true,
+      uploading: false,
+      selectedFile: null,
+      uploadMsg: ''
     }
   },
   computed: {
@@ -145,6 +163,7 @@ export default {
       this.currentEventSource = chatWithSSE(
         this.memoryId,
         userMessage,
+        this.useRag,
         this.handleAiMessage,
         this.handleAiError,
         this.handleAiClose
@@ -248,6 +267,9 @@ export default {
   color: #666;
   margin-top: 5px;
 }
+
+.nav-btn { margin: 0 6px; padding: 6px 10px; border: 1px solid #e1e5e9; background: #fff; border-radius: 6px; cursor: pointer; }
+.nav-btn.active { background: #007bff; color: #fff; border-color: #007bff; }
 
 .chat-container {
   flex: 1;
@@ -532,3 +554,34 @@ export default {
   }
 }
 </style> 
+    triggerFileSelect() {
+      this.$refs.fileInput.click()
+    },
+    onFileSelected(e) {
+      const files = e.target.files
+      if (!files || !files[0]) return
+      this.selectedFile = files[0]
+      this.uploadDocument()
+    },
+    async uploadDocument() {
+      if (!this.selectedFile) return
+      this.uploading = true
+      this.uploadMsg = ''
+      try {
+        const formData = new FormData()
+        formData.append('file', this.selectedFile)
+        const res = await fetch('http://localhost:8081/api/doc/upload', {
+          method: 'POST',
+          body: formData
+        })
+        if (!res.ok) throw new Error('上传失败')
+        this.uploadMsg = '上传成功，文档已纳入知识库'
+      } catch (e) {
+        console.error(e)
+        this.uploadMsg = '上传失败，请重试'
+      } finally {
+        this.uploading = false
+        this.selectedFile = null
+        if (this.$refs.fileInput) this.$refs.fileInput.value = ''
+      }
+    },
