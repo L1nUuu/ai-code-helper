@@ -1,4 +1,4 @@
-package com.lynn.aicodehelper.ai.listener;
+package com.lynn.aicodehelper.ai.model;
 
 import dev.langchain4j.community.model.dashscope.QwenChatModel;
 import dev.langchain4j.model.chat.ChatModel;
