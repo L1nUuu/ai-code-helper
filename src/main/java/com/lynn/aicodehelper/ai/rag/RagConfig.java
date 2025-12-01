@@ -10,10 +10,11 @@ import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.EmbeddingStoreIngestor;
 import dev.langchain4j.store.embedding.inmemory.InMemoryEmbeddingStore;
-
+import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.beans.factory.annotation.Value;
+import java.util.Objects;
 
 import java.util.List;
 
@@ -57,12 +58,18 @@ public class RagConfig {
     @Bean
     public ContentRetriever contentRetriever(EmbeddingModel embeddingModel,
                                             EmbeddingStore<TextSegment> embeddingStore,
-                                            EmbeddingStoreIngestor ingestor) {
+                                            EmbeddingStoreIngestor ingestor,
+                                            DocumentRegistry registry) {
 
         // 可选：启动时加载内置文档
         if (ingestOnStartup) {
             List<Document> documentList = FileSystemDocumentLoader.loadDocuments("src/main/resources/docs");
             ingestor.ingest(documentList);
+            registry.addAll(documentList.stream()
+                    .map(d -> d.metadata().getString("file_name"))
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .toList());
         }
         // 4.自定义内容加载器
         EmbeddingStoreContentRetriever contentRetriever = EmbeddingStoreContentRetriever.builder()
